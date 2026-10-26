@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "routes": [
+    { "path": "/", "status": 200, "headers": { "content-type": { "includes": "text/html" } } },
+    { "path": "/old-page", "status": 301, "headers": { "location": "/new-page" } },
+    { "path": "/missing-page", "status": 404, "headers": { "cache-control": { "includes": "no-store" } } }
+  ]
+}

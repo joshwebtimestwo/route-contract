@@ -1,0 +1,17 @@
+{
+  "name": "@joshwebtimestwo/route-contract",
+  "version": "0.1.0",
+  "description": "Dependency-free HTTP route contracts for redirects, status codes and response headers.",
+  "type": "module",
+  "bin": { "route-contract": "bin/route-contract.mjs" },
+  "exports": "./src/audit.mjs",
+  "files": ["bin", "src", "examples", "README.md", "LICENSE"],
+  "engines": { "node": ">=22" },
+  "scripts": { "test": "node --test", "check": "node --check src/audit.mjs && node --check bin/route-contract.mjs" },
+  "keywords": ["http", "redirects", "headers", "smoke-test", "deployment", "cli"],
+  "author": "mezy (https://mezy.gg)",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/joshwebtimestwo/route-contract.git" },
+  "bugs": { "url": "https://github.com/joshwebtimestwo/route-contract/issues" },
+  "homepage": "https://github.com/joshwebtimestwo/route-contract#readme"
+}
