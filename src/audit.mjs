@@ -14,7 +14,10 @@ export function validateContract(contract) {
   }
   for (const [index, route] of contract.routes.entries()) {
     const label = `routes[${index}]`;
-    keys(route, ['path', 'status', 'headers'], label);
+    keys(route, ['path', 'status', 'headers', 'method'], label);
+    if (route.method !== undefined && !['GET', 'HEAD'].includes(route.method)) {
+      throw new TypeError(`${label}.method must be GET or HEAD`);
+    }
     if (typeof route.path !== 'string' || !route.path.startsWith('/') || route.path.startsWith('//') || /[\\#\s\u0000-\u001f\u007f]/u.test(route.path)) {
       throw new TypeError(`${label}.path must be a root-relative URL without a fragment or whitespace`);
     }
@@ -62,10 +65,10 @@ export async function audit(contract, { base, timeout = 10000, fetch: request = 
   });
   const results = [];
   for (const [index, route] of contract.routes.entries()) {
-    const result = { path: route.path, status: null, passed: false, failures: [] };
+    const result = { path: route.path, method: route.method ?? 'GET', status: null, passed: false, failures: [] };
     try {
       const response = await request(targets[index], {
-        method: 'GET', redirect: 'manual', signal: AbortSignal.timeout(timeout),
+        method: result.method, redirect: 'manual', signal: AbortSignal.timeout(timeout),
         headers: { 'user-agent': 'route-contract/0.1.0' },
       });
       result.status = response.status;

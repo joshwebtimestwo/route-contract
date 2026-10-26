@@ -63,6 +63,33 @@ test('rejects timeout values outside the documented range', async () => {
   for (const timeout of [0, -1, 0.5, NaN, 300001]) await assert.rejects(audit(contract([{ path: '/', status: 200 }]), { base, timeout }));
 });
 
+test('unsupported request methods fail before fetching any route', async () => {
+  for (const method of ['POST', 'head', '', null, 1]) {
+    let calls = 0;
+    await assert.rejects(audit(contract([{ path: '/', status: 200 }, { path: '/asset', status: 200, method }]), { base, fetch: async () => { calls++; } }), /method must be GET or HEAD/);
+    assert.equal(calls, 0);
+  }
+});
+
+test('real HTTP: explicit HEAD checks headers and default routes still use GET', async t => {
+  const methods = [];
+  const server = createServer((req, res) => {
+    methods.push(req.method);
+    res.writeHead(200, { 'content-type': 'application/octet-stream', 'content-length': '1000000' });
+    if (req.method === 'HEAD') res.end();
+    else res.end(Buffer.alloc(1000000));
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const report = await audit(contract([
+    { path: '/asset', status: 200, method: 'HEAD', headers: { 'content-length': '1000000' } },
+    { path: '/asset', status: 200 },
+  ]), { base: `http://127.0.0.1:${server.address().port}` });
+  assert.equal(report.passed, true);
+  assert.deepEqual(methods, ['HEAD', 'GET']);
+  assert.deepEqual(report.results.map(result => result.method), ['HEAD', 'GET']);
+});
+
 test('real HTTP: inspects redirects, does not follow external targets, handles timeouts', async t => {
   let targetHits = 0;
   const server = createServer((req, res) => {

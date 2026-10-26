@@ -61,6 +61,7 @@ own routes before running. `examples/routes.json` provides another starting poin
 | `routes` | 1–200 route objects, checked sequentially |
 | `path` | Root-relative URL; queries are allowed; fragments are rejected |
 | `status` | Exact expected HTTP status, from 200 to 599 |
+| `method` | Optional `GET` (default) or `HEAD`; useful for large assets and header-only checks |
 | `headers` | Optional response-header assertions, with case-insensitive names |
 
 Header expectations accept an exact string, `null` for an absent header, or
@@ -117,7 +118,9 @@ node bin/route-contract.mjs routes.json --base http://localhost:3000
 
 ## Scope
 
-- Requests use GET, with manual redirects. Redirect destinations are never fetched.
+- Requests use GET by default or an explicit HEAD, with manual redirects. Redirect
+  destinations are never fetched. A server can return different headers for GET
+  and HEAD; choose the method whose behaviour you need to test.
 - Page bodies are cancelled rather than buffered or saved. Requests and reports
   still contain the configured paths and asserted header values: do not put secrets
   in a contract you intend to commit or publish.
